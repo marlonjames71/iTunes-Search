@@ -14,6 +14,7 @@ class SearchResultController {
 	let baseURL = URL(string: "https://itunes.apple.com/search")!
 
 	var searchResults: [SearchResult] = []
+	let country = "us"
 
 	func performSearch(searchTerm: String, resultType: ResultType, completion: @escaping(Error?) -> Void) {
 
@@ -21,8 +22,9 @@ class SearchResultController {
 
 		let searchTermQueryItem = URLQueryItem(name: "term", value: searchTerm)
 		let entityQueryItem = URLQueryItem(name: "entity", value: resultType.rawValue)
+		let countryQueryItem = URLQueryItem(name: "country", value: country)
 
-		urlComponents?.queryItems = [searchTermQueryItem, entityQueryItem]
+		urlComponents?.queryItems = [searchTermQueryItem, entityQueryItem, countryQueryItem]
 
 		guard let requestURL = urlComponents?.url else {
 			NSLog("Request URL is nil")

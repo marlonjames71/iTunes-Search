@@ -10,70 +10,59 @@ import UIKit
 
 class SearchResultsTableViewController: UITableViewController {
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
+	let searchResultsController = SearchResultController()
 
-        
+	@IBOutlet weak var segControl: UISegmentedControl!
+	@IBOutlet weak var searchBar: UISearchBar!
+
+
+	override func viewDidLoad() {
+        super.viewDidLoad()
+		searchBar.delegate = self
+		searchBar.placeholder = "Search Apps..."
+		tableView.tableFooterView = UIView()
+
     }
+
+	@IBAction func segControlChanged(_ sender: UISegmentedControl) {
+		switch segControl.selectedSegmentIndex {
+		case 0:
+			searchBar.placeholder = "Search Apps..."
+			segControlSearch()
+		case 1:
+			searchBar.placeholder = "Search Music..."
+			segControlSearch()
+		case 2:
+			searchBar.placeholder = "Search Movies..."
+			segControlSearch()
+		default:
+			break
+		}
+	}
+
+	func segControlSearch() {
+		if searchBar.text != "" {
+			searchBarSearchButtonClicked(searchBar)
+		}
+	}
 
     // MARK: - Table view data source
 
-    override func numberOfSections(in tableView: UITableView) -> Int {
-        // #warning Incomplete implementation, return the number of sections
-        return 0
-    }
-
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of rows
-        return 0
+        let results = searchResultsController.searchResults
+        return results.count
     }
 
-    /*
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
-
-        // Configure the cell...
+        let cell = tableView.dequeueReusableCell(withIdentifier: "ResultCell", for: indexPath)
+		let result = searchResultsController.searchResults[indexPath.row]
+		cell.textLabel?.text = result.title
+		cell.detailTextLabel?.text = result.creator
 
         return cell
     }
-    */
 
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
-    }
-    */
 
-    /*
-    // Override to support editing the table view.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            // Delete the row from the data source
-            tableView.deleteRows(at: [indexPath], with: .fade)
-        } else if editingStyle == .insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
-    }
-    */
-
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
-
-    }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the item to be re-orderable.
-        return true
-    }
-    */
-
-    /*
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
@@ -81,6 +70,32 @@ class SearchResultsTableViewController: UITableViewController {
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller.
     }
-    */
+}
 
+extension SearchResultsTableViewController: UISearchBarDelegate {
+
+	func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+		guard let searchInput = searchBar.text else { return }
+		var resultType: ResultType!
+		switch segControl.selectedSegmentIndex {
+		case 0:
+			resultType = .software
+		case 1:
+			resultType = .musicTrack
+		case 2:
+			resultType = .movie
+		default:
+			break
+		}
+		searchResultsController.performSearch(searchTerm: searchInput, resultType: resultType) { (error) in
+			if let error = error {
+				print("Error fetching data: \(error)")
+				return
+			}
+			DispatchQueue.main.async {
+				self.tableView.reloadData()
+			}
+		}
+		searchBar.endEditing(true)
+	}
 }
